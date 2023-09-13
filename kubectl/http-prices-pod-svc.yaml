@@ -1,0 +1,21 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: http-prices-app
+  labels:
+    app: http-prices
+spec:
+  containers:
+    - name: http-prices
+      image: nagakaravadi/httpprices-cop:v1
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: http-prices-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: http-prices
+  ports:
+    - port: 8080

@@ -1,0 +1,75 @@
+#########
+6+4+3
+
+We covered concepts and have a refresher.
+ - Cloud
+ - Kubernertes personal machine
+
+Describe the Colima/Kind layout
+    - Why: Features: multiple nodes, using load balancers
+    - Resolve the internal ip addresses: and avoid port forwarding
+
+Tools we will use
+
+Show the confluence page with the link
+
+Demo outline:
+Name spaces
+    http-demo
+    grpc-demo
+ - Create a http service and deploy to container registry
+ - Use image to create a pod and service
+
+
+
+
+#########
+
+
+## Steps to run Http Prices with a pod and service
+
+########################
+# COMMON STEPS (Colima, Kind)
+########################
+#Start Colima - we need extra memory - set aside 4GiB
+colima start --memory 4
+
+# Delete kind cluster if we need to
+# kind get clusters
+# kind delete cluster --name kind-multi-node
+#
+#Create kind nodes - 1 control plane & 2 workers
+kind create cluster --config kind/kind-config.yaml
+
+#Set up Colima/Kind networking so it works like AKS
+./SetupNetWorking.sh 
+
+#Setup the Load Balancer
+kubectl apply -f metallb/metallb-native.yaml
+kubectl wait --namespace metallb-system --for=condition=ready pod --selector=app=metallb --timeout=90s
+kubectl apply -f metallb/metallb-conf.yaml 
+
+#############
+# Namespaces
+#############
+kubectl create namespace http-demo
+
+
+########################
+# Http Hello App
+########################
+kubectl apply -f kubectl/http-prices-pod-svc.yaml -n http-demo
+
+kubectl get pods -n http-demo
+kubectl get pod,svc -n http-demo
+
+
+########################
+# Tear Down everthing
+########################
+kubectl delete -f kubectl/http-prices-pod-svc.yaml -n http-demo
+
+
+#Delete everything
+kind delete cluster --name kind-multi-node
+colima stop
